@@ -1,0 +1,453 @@
+Berikut adalah panduan lengkap membina laman web Nuxt.js yang memaparkan lesen dual MPL 3.0 (modified) + MIT, lengkap dengan integrasi database menggunakan Prisma sebagai contoh. Projek ini menggunakan Nuxt 3 (App Router) dan merangkumi halaman utama serta endpoint API.
+
+📦 Struktur Projek
+
+```
+nuxt-license-site/
+├── .env
+├── nuxt.config.ts
+├── package.json
+├── server/
+│   ├── api/
+│   │   └── users.get.ts       // GET /api/users
+│   │   └── users.post.ts      // POST /api/users
+│   └── tsconfig.json
+├── pages/
+│   └── index.vue               // Halaman utama (lesen)
+├── components/
+│   └── LicenseCard.vue         // Komponen kad lesen (opsional)
+├── prisma/
+│   └── schema.prisma           // Skema Prisma
+└── public/
+    └── favicon.ico
+```
+
+🚀 Langkah Demi Langkah
+
+1. Inisialisasi Projek Nuxt 3
+
+```bash
+npx nuxi@latest init nuxt-license-site
+cd nuxt-license-site
+npm install
+```
+
+2. Pasang Prisma dan Database Driver
+
+Pilih database (contoh: SQLite untuk ringan, PostgreSQL untuk production). Di sini kita guna SQLite.
+
+```bash
+npm install prisma --save-dev
+npx prisma init --datasource-provider sqlite
+```
+
+3. Konfigurasi Prisma
+
+Edit prisma/schema.prisma:
+
+```prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
+```
+
+Buat fail .env di root:
+
+```
+DATABASE_URL="file:./dev.db"
+```
+
+Jalankan migrasi dan hasilkan Prisma Client:
+
+```bash
+npx prisma migrate dev --name init
+npx prisma generate
+```
+
+4. Buat Endpoint API untuk Users
+
+server/api/users.get.ts – ambil semua pengguna
+
+```ts
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
+
+export default defineEventHandler(async (event) => {
+  const users = await prisma.user.findMany()
+  return users
+})
+```
+
+server/api/users.post.ts – tambah pengguna baru
+
+```ts
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
+
+export default defineEventHandler(async (event) => {
+  const body = await readBody(event)
+  const user = await prisma.user.create({
+    data: {
+      name: body.name,
+      email: body.email,
+    },
+  })
+  return user
+})
+```
+
+Nota: Dalam production, pastikan untuk mengurus sambungan Prisma dengan betul (gunakan singleton atau connection pooling).
+
+5. Halaman Utama – Paparan Lesen
+
+Buat fail pages/index.vue. Halaman ini mengandungi teks lesen dan butang salin, serta senarai pengguna dari database untuk menunjukkan integrasi.
+
+```vue
+<template>
+  <div class="container">
+    <h1>📜 MPL 3.0 (Modified) + MIT/X11 · Dual License Framework</h1>
+    <div class="subhead">
+      Hak Cipta 2026 · Muhamad Sazwan Bin Ismail (Sazwanismail / sazwan96)
+    </div>
+
+    <div class="warning">
+      ⚠️ NOTA: Versi 3.0 ini adalah <strong>ubah suai tidak rasmi</strong> untuk tujuan demonstrasi. Versi rasmi MPL terkini ialah 2.0.
+    </div>
+
+    <h2>🔹 Dual License Comparison</h2>
+    <div class="license-grid">
+      <!-- MPL 3.0 -->
+      <div class="license-card">
+        <h3>🦊 MPL 3.0 (Mozilla Public License · Modified)</h3>
+        <button class="btn-copy" data-target="mpl30-full">📋 Salin MPL 3.0</button>
+        <pre class="license-box" id="mpl30-full">{{ mplText }}</pre>
+      </div>
+
+      <!-- MIT/X11 -->
+      <div class="license-card">
+        <h3>⚖️ MIT/X11 License (Expat)</h3>
+        <button class="btn-copy" data-target="mit-full">📋 Salin MIT</button>
+        <pre class="license-box" id="mit-full">{{ mitText }}</pre>
+      </div>
+    </div>
+
+    <!-- Contoh kod -->
+    <h2>🐍⚙️ Contoh Kod (Dilindungi Dual License)</h2>
+    <div class="license-grid">
+      <div>
+        <h3>🐍 Python (utils.py)</h3>
+        <pre class="code-block"><span class="comment"># Copyright (c) 2026 Muhamad Sazwan Bin Ismail</span>
+<span class="comment"># SPDX-License-Identifier: MIT OR MPL-3.0</span>
+
+<span class="keyword">def</span> <span class="function">hitung_persegi</span>(panjang: float, lebar: float) -> float:
+    <span class="comment">"""Kira luas segi empat."""</span>
+    <span class="keyword">return</span> panjang * lebar
+
+<span class="comment"># list comprehension</span>
+nombor = [1, 2, 3, 4, 5]
+kuasa_dua = [n**2 <span class="keyword">for</span> n <span class="keyword">in</span> nombor <span class="keyword">if</span> n % 2 == 0]
+print(kuasa_dua)</pre>
+      </div>
+      <div>
+        <h3>⚙️ C++ (math.cpp)</h3>
+        <pre class="code-block"><span class="comment">// Copyright (c) 2026 Muhamad Sazwan Bin Ismail</span>
+<span class="comment">// SPDX-License-Identifier: MIT OR MPL-3.0</span>
+
+<span class="keyword">#include</span> <span class="string">&lt;iostream&gt;</span>
+<span class="keyword">#include</span> <span class="string">&lt;vector&gt;</span>
+
+<span class="keyword">double</span> <span class="function">hitungPersegi</span>(<span class="keyword">double</span> panjang, <span class="keyword">double</span> lebar) {
+    <span class="keyword">return</span> panjang * lebar;
+}
+
+<span class="keyword">int</span> <span class="function">main</span>() {
+    std::vector&lt;<span class="keyword">int</span>&gt; nombor = {1,2,3,4,5};
+    <span class="keyword">for</span> (<span class="keyword">int</span> n : nombor) {
+        <span class="keyword">if</span> (n % 2 == 0)
+            std::cout &lt;&lt; n*n &lt;&lt; <span class="string">" "</span>;
+    }
+    <span class="keyword">return</span> 0;
+}</pre>
+      </div>
+    </div>
+
+    <!-- Struktur repositori -->
+    <h2>📁 Struktur Repositori</h2>
+    <pre class="code-block light">Sazwan.Github.com/
+├── LICENSE-MPL3.txt
+├── LICENSE-MIT.txt
+├── README.md
+├── src/
+│   ├── python/utils.py
+│   └── cpp/math.cpp
+└── ...</pre>
+
+    <!-- Pautan hosting percuma -->
+    <h2>🚀 Pautan Server · Hosting Percuma</h2>
+    <div class="hosting-grid">
+      <!-- GitHub Pages -->
+      <div class="hosting-card">
+        <h4>🐙 GitHub Pages</h4>
+        <p>Hosting percuma untuk repositori GitHub.</p>
+        <a href="https://pages.github.com/" class="link" target="_blank">Aktifkan →</a>
+      </div>
+      <!-- Vercel -->
+      <div class="hosting-card">
+        <h4>▲ Vercel</h4>
+        <p>Deploy dari GitHub secara percuma.</p>
+        <a href="https://vercel.com/new" class="link" target="_blank">Deploy →</a>
+      </div>
+      <!-- Netlify -->
+      <div class="hosting-card">
+        <h4>⚡ Netlify</h4>
+        <p>Drag and drop deploy.</p>
+        <a href="https://app.netlify.com/" class="link" target="_blank">Deploy →</a>
+      </div>
+      <!-- Render -->
+      <div class="hosting-card">
+        <h4>☁️ Render</h4>
+        <p>Hosting statik dengan SSL percuma.</p>
+        <a href="https://render.com/" class="link" target="_blank">Deploy →</a>
+      </div>
+    </div>
+
+    <!-- Demo Integrasi Database -->
+    <h2>🗄️ Senarai Pengguna (dari Database)</h2>
+    <div v-if="pending">Memuatkan...</div>
+    <ul v-else>
+      <li v-for="user in users" :key="user.id">
+        {{ user.name }} ({{ user.email }})
+      </li>
+    </ul>
+
+    <form @submit.prevent="addUser">
+      <input v-model="newUser.name" placeholder="Nama" required />
+      <input v-model="newUser.email" type="email" placeholder="Email" required />
+      <button type="submit">Tambah Pengguna</button>
+    </form>
+
+    <hr />
+    <div class="footer">
+      © 2026 Muhamad Sazwan Bin Ismail (Sazwanismail) · Hak cipta terpelihara.
+    </div>
+  </div>
+</template>
+
+<script setup>
+// Teks lesen
+const mplText = `Mozilla Public License Version 3.0 (modified)
+==================================
+
+1. Definitions
+...
+... (sila rujuk teks penuh dari versi HTML sebelumnya)
+`;
+
+const mitText = `MIT License (Expat)
+
+Copyright (c) 2026 Muhamad Sazwan Bin Ismail (Sazwanismail)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+... (teks penuh MIT)
+`;
+
+// Data pengguna dari API
+const { data: users, pending, refresh } = useFetch('/api/users')
+
+const newUser = reactive({ name: '', email: '' })
+
+async function addUser() {
+  await $fetch('/api/users', {
+    method: 'POST',
+    body: newUser
+  })
+  newUser.name = ''
+  newUser.email = ''
+  refresh()
+}
+
+// Fungsi salin teks (client-side)
+onMounted(() => {
+  document.querySelectorAll('.btn-copy').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const targetId = this.getAttribute('data-target')
+      const targetEl = document.getElementById(targetId)
+      if (targetEl) {
+        navigator.clipboard.writeText(targetEl.innerText).then(() => {
+          const original = this.innerText
+          this.innerText = '✓ Disalin!'
+          setTimeout(() => this.innerText = original, 1500)
+        })
+      }
+    })
+  })
+})
+</script>
+
+<style scoped>
+/* Gaya CSS – boleh salin dari versi HTML sebelumnya dan ubah suai */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: white;
+  border-radius: 2rem;
+  box-shadow: 0 20px 35px -8px rgba(0,0,0,0.1);
+}
+h1 {
+  font-size: 2.5rem;
+  background: linear-gradient(135deg, #0f172a, #334155);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.subhead {
+  color: #475569;
+  border-left: 5px solid #3b82f6;
+  padding-left: 1.2rem;
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+}
+.license-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+@media (max-width: 768px) {
+  .license-grid { grid-template-columns: 1fr; }
+}
+.license-card {
+  background: #f1f5f9;
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+}
+.license-box {
+  background: #0f172a;
+  color: #f8fafc;
+  padding: 1.5rem;
+  border-radius: 1.2rem;
+  font-family: monospace;
+  white-space: pre-wrap;
+  max-height: 400px;
+  overflow-y: auto;
+}
+.btn-copy {
+  background: #e2e8f0;
+  border: none;
+  border-radius: 2rem;
+  padding: 0.3rem 1rem;
+  cursor: pointer;
+  float: right;
+}
+.hosting-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+.hosting-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  padding: 1rem;
+  text-align: center;
+}
+.link {
+  background: #3b82f6;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 2rem;
+  text-decoration: none;
+  display: inline-block;
+}
+.warning {
+  background: #fee2e2;
+  border-left: 6px solid #ef4444;
+  padding: 1rem;
+  border-radius: 1rem;
+}
+.code-block {
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 1rem;
+  border-radius: 1rem;
+  overflow-x: auto;
+}
+.comment { color: #94a3b8; }
+.keyword { color: #f472b6; }
+.function { color: #facc15; }
+.string { color: #a3e635; }
+.light { background: #f1f5f9; color: #1e293b; }
+.footer {
+  text-align: center;
+  color: #64748b;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+}
+</style>
+```
+
+6. Konfigurasi Nuxt
+
+nuxt.config.ts – pastikan modul dan typescript disokong.
+
+```ts
+export default defineNuxtConfig({
+  devtools: { enabled: true },
+  nitro: {
+    // Optional: konfigurasi khusus untuk server engine
+  },
+  typescript: {
+    strict: true,
+  },
+})
+```
+
+7. Menjalankan Projek
+
+```bash
+npm run dev
+```
+
+Akses http://localhost:3000 – anda akan lihat halaman lesen dan borang tambah pengguna.
+
+📦 Deployment
+
+Deployment ke Vercel / Netlify
+
+· Pastikan database menggunakan perkhidmatan seperti Supabase, MongoDB Atlas, atau PostgreSQL hosted. Untuk SQLite, ia tidak sesuai untuk hosting serverless kerana fail tidak kekal. Tukar ke PostgreSQL atau MySQL dan set DATABASE_URL di environment variable platform hosting.
+· Prisma Client perlu dihasilkan semasa build. Tambahkan skrip postinstall di package.json:
+
+```json
+"scripts": {
+  "postinstall": "prisma generate"
+}
+```
+
+Deployment ke Vercel
+
+```bash
+npm i -g vercel
+vercel
+```
+
+Ikut arahan dan set environment variable DATABASE_URL.
+
+✅ Kesimpulan
+
+Anda kini mempunyai laman Nuxt.js yang memaparkan lesen dual MPL+MIT, dilengkapi dengan integrasi database menggunakan Prisma. Halaman ini responsif, mempunyai butang salin teks, dan boleh dijadikan asas untuk dokumentasi projek sumber terbuka.
+
+Sekiranya anda memerlukan sebarang penyesuaian lanjut (contohnya menambah lesen lain atau mengubah reka bentuk), sila beritahu!
