@@ -1,0 +1,102 @@
+name: NodeJS with Webpack
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Build
+      run: |
+        npm install
+        npx webpack
+明白了，您要下载的是 **`webpack.yml`** 这个文件。
+
+这通常是一个 **GitHub Actions 自动化工作流配置文件**，用于在代码推送时自动执行 Webpack 构建任务。
+
+我为您生成了一份标准的、可直接使用的 `webpack.yml` 文件内容。您**复制**下面的代码，在本地新建文件并粘贴保存即可。
+
+---
+
+### 文件内容（复制此部分）
+
+创建一个新文件，命名为 `webpack.yml`，将以下内容完整粘贴进去：
+
+```yaml
+# .github/workflows/webpack.yml
+# 自动化构建工作流 - 当推送代码时自动运行 Webpack 打包
+
+name: Webpack Build CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+    - name: 拉取代码
+      uses: actions/checkout@v4
+
+    - name: 使用 Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: 安装依赖
+      run: npm ci
+
+    - name: 执行 Webpack 构建
+      run: npm run build
+
+    - name: 上传构建产物 (打包后的文件)
+      uses: actions/upload-artifact@v4
+      with:
+        name: dist-files
+        path: dist/
+```
+
+---
+
+### 如何将文件保存到本地（下载）
+
+1. **复制**上方代码框内的全部内容。
+2. 打开电脑上的**记事本**（或 VS Code、Sublime 等任意编辑器）。
+3. 粘贴内容。
+4. 点击 **文件 → 另存为**。
+5. 文件名填写 `webpack.yml`（注意：如果保存为 `.txt`，请手动删除后缀，确保文件名是 `.yml`）。
+6. 保存路径建议放在项目根目录下的 `.github/workflows/` 文件夹内（如果没有该文件夹，请手动新建）。
+
+---
+
+### 如果您需要其他用途的 webpack.yml
+
+- **如果是 Webpack 本身的配置文件**：通常叫 `webpack.config.js`，不是 `.yml`，如果您需要的是 JS 配置文件，请告诉我。
+- **如果是 Docker Compose 或 CI 其他用途**：请补充说明您的使用场景，我可以调整内容。
+
+直接告诉我，我马上给您改！
